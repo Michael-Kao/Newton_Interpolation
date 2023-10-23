@@ -15,7 +15,7 @@ Application::~Application() {
 }
 
 void Application::Init() {
-    m_cube = new Object("assets/objfiles/cube.obj");
+    // m_cube = new Object("assets/objfiles/cube.obj");
     m_shader = new Shader("assets/shaders/basic.vs", "assets/shaders/basic.fs");
     m_white = new Shader("assets/shaders/whitevs.glsl", "assets/shaders/whitefs.glsl");
     m_camera = new Camera();
@@ -67,8 +67,18 @@ void Application::drawPlane() {
     m_white->unbind();
 }
 
-void Application::NewtonTest() {
-    
+void Application::drawNewton() {
+    m_shader->bind();
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(m_camera->fov), (float)m_window->getWidth() / (float)m_window->getHeight(), 0.1f, 100.0f);
+    view       = m_camera->getLookAt();
+    m_shader->setMat4("view", view);
+    m_shader->setMat4("projection", projection);
+    glm::mat4 model = glm::mat4(1.0f);
+    m_shader->setMat4("model", model);
+    m_interpolation->draw();
+    m_shader->unbind();
 }
 
 void Application::drawOrigin() {
@@ -144,7 +154,8 @@ void Application::run() {
         }
         {
             drawPlane();
-            drawOrigin();
+            drawNewton();
+            // drawOrigin();
         }
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         // glViewport(0, 0, m_window->getWidth() / 2, m_window->getHeight() / 2);

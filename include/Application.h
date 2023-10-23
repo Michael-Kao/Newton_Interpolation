@@ -34,7 +34,7 @@ private:
     void drawTest();
     void drawPlane();
     void drawOrigin();
-    void NewtonTest();
+    void drawNewton();
     void processCamera(float delta_time);
     void processInput();
 };
