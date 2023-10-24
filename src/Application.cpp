@@ -22,6 +22,9 @@ void Application::Init() {
     m_line = new Line();
     m_origin = new Analytical();
     m_interpolation = new Newton();
+    NormCalc norm;
+    norm.Norm2(m_origin, m_interpolation);
+    norm.Norminf(m_origin, m_interpolation);
 }
 
 void Application::drawTest() {

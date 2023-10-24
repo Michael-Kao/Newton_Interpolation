@@ -14,6 +14,7 @@
 #include "Line.h"
 #include "Analytic.h"
 #include "Newton.h"
+#include "Norm.h"
 
 class Application{
 public:

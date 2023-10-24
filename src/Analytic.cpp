@@ -6,6 +6,11 @@ Analytical::Analytical()
     double dt = (2 * PI) / 360.0;
 
     for(int i = 0; i < 361; i++) {
+        value.push_back({
+            i * dt,
+            i * dt,
+            0.0
+        });
         info.vertices.push_back( { 4 * cos( i * dt ), 
                                    2 * sin( i * dt ), 
                                    0.0 });

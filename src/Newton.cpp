@@ -92,15 +92,19 @@ void Newton::NewtonInterpolate() {
     value = std::vector<glm::vec3>(N);
     double dt = (2 * PI) / N;
     for(int i = 0; i < N; i++) {
-        value[i].x = 4 * cos( interpolateX( i * dt ) );
-        value[i].y = 2 * sin( interpolateY( i * dt ) );
+        value[i].x = interpolateX( i * dt );
+        value[i].y = interpolateY( i * dt );
         value[i].z = 0.0;
     }
 }
 
 void Newton::AssignData() {
     for(int i = 0; i < value.size(); i++) {
-        info.vertices.push_back(value[i]);
+        info.vertices.push_back({
+            4 * cos( value[i].x ),
+            2 * sin( value[i].y ),
+            0.0
+        });
     }
     for(int i = 0; i < info.vertices.size() - 1; i++) {
         info.vertexIndices.push_back(i);
