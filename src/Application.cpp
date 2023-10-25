@@ -80,7 +80,10 @@ void Application::drawNewton() {
     m_shader->setMat4("projection", projection);
     glm::mat4 model = glm::mat4(1.0f);
     m_shader->setMat4("model", model);
-    m_interpolation->draw();
+    // m_interpolation->draw();
+    for(int i = 0; i < 6; i++) {
+        m_interpolation->draw(i);
+    }
     m_shader->unbind();
 }
 
