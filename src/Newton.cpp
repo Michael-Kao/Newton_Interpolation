@@ -8,11 +8,11 @@ Newton::Newton()
     CalcCoef();
     NewtonInterpolate();
     AssignData();
-    if(NofCoef == 8) {
-        splitRegion();
-        SplitInterpolate();
-        AssignSpline();
-    }
+    // if(NofCoef == 8) {
+    //     splitRegion();
+    //     SplitInterpolate();
+    //     AssignSpline();
+    // }
 }
 
 /* Generate the data for interpolation */
@@ -236,6 +236,7 @@ void Newton::AssignSpline() {
 void Newton::AssignData() {
     for(int i = 0; i < value.size(); i++) {
         info.vertices.push_back({
+            // value[i].x,
             4 * cos( value[i].x ),
             2 * sin( value[i].y ),
             0.0

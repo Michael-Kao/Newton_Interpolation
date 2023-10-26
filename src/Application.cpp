@@ -16,6 +16,7 @@ Application::~Application() {
 
 void Application::Init() {
     // m_cube = new Object("assets/objfiles/cube.obj");
+    std::cout << std::setprecision(15);
     m_shader = new Shader("assets/shaders/basic.vs", "assets/shaders/basic.fs");
     m_white = new Shader("assets/shaders/whitevs.glsl", "assets/shaders/whitefs.glsl");
     m_camera = new Camera();
@@ -24,13 +25,13 @@ void Application::Init() {
     m_interpolation = new Newton();
     NormCalc norm;
     norm.Norm2(m_origin, m_interpolation);
-    for(int i = 0; i < 6; i++) {
-        norm.Norm2(m_origin, m_interpolation, i);
-    }
+    // for(int i = 0; i < 6; i++) {
+    //     norm.Norm2(m_origin, m_interpolation, i);
+    // }
     norm.Norminf(m_origin, m_interpolation);
-    for(int i = 0; i < 6; i++) {
-        norm.Norminf(m_origin, m_interpolation, i);
-    }
+    // for(int i = 0; i < 6; i++) {
+    //     norm.Norminf(m_origin, m_interpolation, i);
+    // }
 }
 
 void Application::drawTest() {
@@ -86,11 +87,11 @@ void Application::drawNewton() {
     m_shader->setMat4("projection", projection);
     glm::mat4 model = glm::mat4(1.0f);
     m_shader->setMat4("model", model);
-    if(m_interpolation->NofCoef > 8)
+    // if(m_interpolation->NofCoef > 8)
         m_interpolation->draw();
-    for(int i = 0; i < 6; i++) {
-        m_interpolation->draw(i);
-    }
+    // for(int i = 0; i < 6; i++) {
+    //     m_interpolation->draw(i);
+    // }
     m_shader->unbind();
 }
 
