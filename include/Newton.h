@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include <iomanip>
 #include <cmath>
 
 /* TODO: seperate Newton interpolation 6 times */
@@ -22,6 +23,7 @@ public:
     void draw(int section) const;
     std::vector<glm::vec3> value;
     std::vector<glm::vec3> svalue;
+    int NofCoef, N;
 private:
     GLuint vao;
     GLuint svao[6];
@@ -31,11 +33,11 @@ private:
     std::vector<std::vector<std::vector<double>>> cY;
     // std::vector<double> coef;
     std::vector<glm::vec3> Origin;
-    int NofCoef, N;
     double PI;
     double interpolateY(double x);
     double interpolateX(double y);
     double itpX(double y, int section);
     double itpY(double x, int section);
+    void c1Continuity(int section, double val);
     void splitRegion();
 };

@@ -24,7 +24,13 @@ void Application::Init() {
     m_interpolation = new Newton();
     NormCalc norm;
     norm.Norm2(m_origin, m_interpolation);
+    for(int i = 0; i < 6; i++) {
+        norm.Norm2(m_origin, m_interpolation, i);
+    }
     norm.Norminf(m_origin, m_interpolation);
+    for(int i = 0; i < 6; i++) {
+        norm.Norminf(m_origin, m_interpolation, i);
+    }
 }
 
 void Application::drawTest() {
@@ -80,7 +86,8 @@ void Application::drawNewton() {
     m_shader->setMat4("projection", projection);
     glm::mat4 model = glm::mat4(1.0f);
     m_shader->setMat4("model", model);
-    // m_interpolation->draw();
+    if(m_interpolation->NofCoef > 8)
+        m_interpolation->draw();
     for(int i = 0; i < 6; i++) {
         m_interpolation->draw(i);
     }

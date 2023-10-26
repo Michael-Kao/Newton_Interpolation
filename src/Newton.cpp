@@ -174,6 +174,13 @@ void Newton::SplitInterpolate() {
         int idx = i / 45;
         svalue[i].x = itpX( i * dt, idx - 1 );
         svalue[i].y = itpY( i * dt, idx - 1 );
+        if(i != 45 && i % 45 == 0) {
+            double x0, y0;
+            x0 = itpX( i * dt, idx - 2 );
+            y0 = itpY( i * dt, idx - 2 );
+            std::cout << std::setprecision(15) << "[" << x0 << "," << y0 << "] => [" << svalue[i].x << "," << svalue[i].y << "]\n";
+            c1Continuity( idx-1, i * dt );
+        }
         svalue[i].z = 0.0;
     }
 }
@@ -191,18 +198,18 @@ void Newton::NewtonInterpolate() {
 void Newton::AssignSpline() {
     for(int i = 45; i < 315; i++) {
         int idx = i / 45 - 1;
-        if(i % 45 == 0) {
+        spline[idx].vertices.push_back({
+            4 * cos( svalue[i].x ),
+            2 * sin( svalue[i].y ),
+            0.0
+        });
+        if(i % 45 == 0 && i != 45) {
             spline[idx - 1].vertices.push_back({
                 4 * cos( svalue[i].x ),
                 2 * sin( svalue[i].y ),
                 0.0
             });
         }
-        spline[idx].vertices.push_back({
-            4 * cos( svalue[i].x ),
-            2 * sin( svalue[i].y ),
-            0.0
-        });
     }
     glGenVertexArrays(6, svao);
     glGenBuffers(6, svbo);
@@ -265,4 +272,38 @@ void Newton::draw() const {
 void Newton::draw(int section) const {
     glBindVertexArray(svao[section]);
     glDrawElements(GL_LINES, spline[section].vertexIndices.size(), GL_UNSIGNED_INT, 0);
+}
+
+void Newton::c1Continuity(int section, double val) {
+    /* p'(x) = 3coef[3]*x^2 + 2(coef[2]-coef[3]*(x0+x1+x2)) + coef[1] + (coef[3]*x2-coef[2])(x0+x1)*/
+    double x0[2], x1[2], x2[2];
+    double y0[2], y1[2], y2[2];
+    double xpre, ypre;
+    double xnew, ynew;
+    double val2 = val * val;
+    x0[0] = Origin[section-1].x;
+    x1[0] = Origin[section-1+1].x;
+    x2[0] = Origin[section-1+2].x;
+    x0[1] = Origin[section].x;
+    x1[1] = Origin[section+1].x;
+    x2[1] = (section + 2 == 8) ? Origin[0].x : Origin[section+2].x;
+    y0[0] = Origin[section-1].y;
+    y1[0] = Origin[section-1+1].y;
+    y2[0] = Origin[section-1+2].y;
+    y0[1] = Origin[section].y;
+    y1[1] = Origin[section+1].y;
+    y2[1] = (section + 2 == 8) ? Origin[0].y : Origin[section+2].y;
+
+    xpre = 3*cX[section-1][0][3]*val2 + 2*(cX[section-1][0][2]-cX[section-1][0][3]*(x0[0]+x1[0]+x2[0]))
+        + cX[section-1][0][1] + (cX[section-1][0][3]*x2[0]-cX[section-1][0][2])*(x0[0]+x1[0]);
+    ypre = 3*cY[section-1][0][3]*val2 + 2*(cY[section-1][0][2]-cY[section-1][0][3]*(y0[0]+y1[0]+y2[0]))
+        + cY[section-1][0][1] + (cY[section-1][0][3]*y2[0]-cY[section-1][0][2])*(y0[0]+y1[0]);
+
+    double t = 3*cX[section][0][3]*val2;
+    xnew = 3*cX[section][0][3]*val2 + 2*(cX[section][0][2]-cX[section][0][3]*(x0[1]+x1[1]+x2[1]))
+        + cX[section][0][1] + cX[section][0][3]*(x0[1]*x1[1]+x0[1]*x2[1]+x1[1]*x2[1]) - cX[section][0][2]*(x0[1]+x2[1]);
+    ynew = 3*cY[section][0][3]*val2 + 2*(cY[section][0][2]-cY[section][0][3]*(y0[1]+y1[1]+y2[1]))
+        + cY[section][0][1] + (cY[section][0][3]*y2[1]-cY[section][0][2])*(y0[1]+y1[1]);
+    
+    std::cout << "C1 [" << xpre << "," << ypre << "] => [" << xnew << "," << ynew << "]\n";
 }
