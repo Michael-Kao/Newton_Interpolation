@@ -8,20 +8,26 @@ Newton::Newton()
     CalcCoef();
     NewtonInterpolate();
     AssignData();
-    // if(NofCoef == 8) {
-    //     splitRegion();
-    //     SplitInterpolate();
-    //     AssignSpline();
-    // }
+    if(NofCoef == 9) {
+        splitRegion();
+        SplitInterpolate();
+        AssignSpline();
+    }
 }
 
 /* Generate the data for interpolation */
 void Newton::GenerateData() {
     double dt = (2 * PI) / NofCoef;
+    NofCoef+=1;
     for(int i = 0; i < NofCoef; i++) {
-        Origin.push_back({
+        OriginX.push_back({
             i * dt,
+            4 * cos(i * dt),
+            0.0
+        });
+        OriginY.push_back({
             i * dt,
+            2 * sin(i * dt),
             0.0
         });
     }
@@ -31,32 +37,16 @@ void Newton::GenerateData() {
 void Newton::splitRegion() {
     for(int i = 0; i < 6; i++) {
         for(int j = 0; j < 4; j++) {
-            if(j + i < 8) {
-                cX[i][j][0] = Origin[j + i].x;
-                cY[i][j][0] = Origin[j + i].y;
-            }
-            else {
-                cX[i][j][0] = Origin[0].x;
-                cY[i][j][0] = Origin[0].y;
-            }
+            cX[i][j][0] = OriginX[j + i].y;
+            cY[i][j][0] = OriginY[j + i].y;
         }
     }
 
     for(int i = 0; i < 6; i++) {
         for(int t = 1; t < 4; t++) {
             for(int j = 0; j < 4 - t; j++) {
-                if(j + t + i == 8) {
-                    cY[i][j][t] = (cY[i][j + 1][t - 1] - cY[i][j][t - 1]) / (Origin[0].x - Origin[j + i].x);
-                    cX[i][j][t] = (cX[i][j + 1][t - 1] - cX[i][j][t - 1]) / (Origin[0].y - Origin[j + i].y);
-                }
-                else if(j + i == 8) {
-                    cY[i][j][t] = (cY[i][j + 1][t - 1] - cY[i][j][t - 1]) / (Origin[t].x - Origin[0].x);
-                    cX[i][j][t] = (cX[i][j + 1][t - 1] - cX[i][j][t - 1]) / (Origin[t].y - Origin[0].y);
-                }
-                else {
-                    cY[i][j][t] = (cY[i][j + 1][t - 1] - cY[i][j][t - 1]) / (Origin[j + t + i].x - Origin[j + i].x);
-                    cX[i][j][t] = (cX[i][j + 1][t - 1] - cX[i][j][t - 1]) / (Origin[j + t + i].y - Origin[j + i].y);
-                }
+                cY[i][j][t] = (cY[i][j + 1][t - 1] - cY[i][j][t - 1]) / (OriginY[j + t + i].x - OriginY[j + i].x);
+                cX[i][j][t] = (cX[i][j + 1][t - 1] - cX[i][j][t - 1]) / (OriginX[j + t + i].x - OriginX[j + i].x);
             }
         }
     }
@@ -73,18 +63,18 @@ void Newton::splitRegion() {
 }
 
 void Newton::CalcCoef() {
-    const int size = Origin.size();
+    const int size = OriginX.size();
 
     {
         coefY = std::vector<std::vector<double>>(size, std::vector<double>(size));
-        for (int i = 0; i < Origin.size(); i++) {
-            coefY[i][0] = Origin[i].y;
+        for (int i = 0; i < size; i++) {
+            coefY[i][0] = OriginY[i].y;
         }
 
         for (int t = 1; t < NofCoef; t++) {
             for (int j = 0; j < NofCoef - t; j++)
             {
-                coefY[j][t] = (coefY[j + 1][t - 1] - coefY[j][t - 1]) / (Origin[j + t].x - Origin[j].x);
+                coefY[j][t] = (coefY[j + 1][t - 1] - coefY[j][t - 1]) / (OriginY[j + t].x - OriginY[j].x);
             }
         }
         /* Print out coefficient */
@@ -98,14 +88,14 @@ void Newton::CalcCoef() {
     }
     {
         coefX = std::vector<std::vector<double>>(size, std::vector<double>(size));
-        for (int i = 0; i < Origin.size(); i++) {
-            coefX[i][0] = Origin[i].x;
+        for (int i = 0; i < size; i++) {
+            coefX[i][0] = OriginX[i].y;
         }
 
         for (int t = 1; t < NofCoef; t++) {
             for (int j = 0; j < NofCoef - t; j++)
             {
-                coefX[j][t] = (coefX[j + 1][t - 1] - coefX[j][t - 1]) / (Origin[j + t].y - Origin[j].y);
+                coefX[j][t] = (coefX[j + 1][t - 1] - coefX[j][t - 1]) / (OriginX[j + t].x - OriginX[j].x);
             }
         }
         /* Print out coefficient */
@@ -119,14 +109,14 @@ void Newton::CalcCoef() {
     }
 }
 
-double Newton::itpX(double y, int section) {
+double Newton::itpX(double x, int section) {
     double sum = cX[section][0][3];
     for(int i = 4 - 2; i >= 0; i--) {
         if(i + section == 8) {
-            sum = sum * (y - Origin[0].y) + cX[section][0][i];
+            sum = sum * (x - OriginX[0].x) + cX[section][0][i];
         }
         else {
-            sum = sum * (y - Origin[i + section].y) + cX[section][0][i];
+            sum = sum * (x - OriginX[i + section].x) + cX[section][0][i];
         }
     }
     return sum;
@@ -136,10 +126,10 @@ double Newton::itpY(double x, int section) {
     double sum = cY[section][0][3];
     for(int i = 4 - 2; i >= 0; i--) {
         if(i + section == 8) {
-            sum = sum * (x - Origin[0].x) + cY[section][0][i];
+            sum = sum * (x - OriginY[0].x) + cY[section][0][i];
         }
         else {
-            sum = sum * (x - Origin[i + section].x) + cY[section][0][i];
+            sum = sum * (x - OriginY[i + section].x) + cY[section][0][i];
         }
     }
     return sum;
@@ -149,17 +139,17 @@ double Newton::interpolateY(double x) {
     double sum = coefY[0][NofCoef - 1];
 
     for(int i = NofCoef - 2; i >= 0; i--) {
-        sum = sum * (x - Origin[i].x) + coefY[0][i];
+        sum = sum * (x - OriginY[i].x) + coefY[0][i];
     }
 
     return sum;
 }
 
-double Newton::interpolateX(double y) {
+double Newton::interpolateX(double x) {
     double sum = coefX[0][NofCoef - 1];
 
     for(int i = NofCoef - 2; i >= 0; i--) {
-        sum = sum * (y - Origin[i].y) + coefX[0][i];
+        sum = sum * (x - OriginX[i].x) + coefX[0][i];
     }
 
     return sum;
@@ -178,7 +168,7 @@ void Newton::SplitInterpolate() {
             double x0, y0;
             x0 = itpX( i * dt, idx - 2 );
             y0 = itpY( i * dt, idx - 2 );
-            std::cout << std::setprecision(15) << "[" << x0 << "," << y0 << "] => [" << svalue[i].x << "," << svalue[i].y << "]\n";
+            std::cout << "C0 [" << x0 << "," << y0 << "] => [" << svalue[i].x << "," << svalue[i].y << "]\n";
             c1Continuity( idx-1, i * dt );
         }
         svalue[i].z = 0.0;
@@ -199,14 +189,14 @@ void Newton::AssignSpline() {
     for(int i = 45; i < 315; i++) {
         int idx = i / 45 - 1;
         spline[idx].vertices.push_back({
-            4 * cos( svalue[i].x ),
-            2 * sin( svalue[i].y ),
+            svalue[i].x,
+            svalue[i].y,
             0.0
         });
         if(i % 45 == 0 && i != 45) {
             spline[idx - 1].vertices.push_back({
-                4 * cos( svalue[i].x ),
-                2 * sin( svalue[i].y ),
+                svalue[i].x,
+                svalue[i].y,
                 0.0
             });
         }
@@ -236,9 +226,8 @@ void Newton::AssignSpline() {
 void Newton::AssignData() {
     for(int i = 0; i < value.size(); i++) {
         info.vertices.push_back({
-            // value[i].x,
-            4 * cos( value[i].x ),
-            2 * sin( value[i].y ),
+            value[i].x,
+            value[i].y,
             0.0
         });
     }
@@ -282,29 +271,30 @@ void Newton::c1Continuity(int section, double val) {
     double xpre, ypre;
     double xnew, ynew;
     double val2 = val * val;
-    x0[0] = Origin[section-1].x;
-    x1[0] = Origin[section-1+1].x;
-    x2[0] = Origin[section-1+2].x;
-    x0[1] = Origin[section].x;
-    x1[1] = Origin[section+1].x;
-    x2[1] = (section + 2 == 8) ? Origin[0].x : Origin[section+2].x;
-    y0[0] = Origin[section-1].y;
-    y1[0] = Origin[section-1+1].y;
-    y2[0] = Origin[section-1+2].y;
-    y0[1] = Origin[section].y;
-    y1[1] = Origin[section+1].y;
-    y2[1] = (section + 2 == 8) ? Origin[0].y : Origin[section+2].y;
+    x0[0] = OriginX[section-1].x;
+    x1[0] = OriginX[section-1+1].x;
+    x2[0] = OriginX[section-1+2].x;
+    x0[1] = OriginX[section].x;
+    x1[1] = OriginX[section+1].x;
+    x2[1] = OriginX[section+2].x;
+    y0[0] = OriginY[section-1].x;
+    y1[0] = OriginY[section-1+1].x;
+    y2[0] = OriginY[section-1+2].x;
+    y0[1] = OriginY[section].x;
+    y1[1] = OriginY[section+1].x;
+    y2[1] = OriginY[section+2].x;
 
-    xpre = 3*cX[section-1][0][3]*val2 + 2*(cX[section-1][0][2]-cX[section-1][0][3]*(x0[0]+x1[0]+x2[0]))
-        + cX[section-1][0][1] + (cX[section-1][0][3]*x2[0]-cX[section-1][0][2])*(x0[0]+x1[0]);
-    ypre = 3*cY[section-1][0][3]*val2 + 2*(cY[section-1][0][2]-cY[section-1][0][3]*(y0[0]+y1[0]+y2[0]))
-        + cY[section-1][0][1] + (cY[section-1][0][3]*y2[0]-cY[section-1][0][2])*(y0[0]+y1[0]);
+    xpre = cX[section-1][0][1] * val + cX[section-1][0][2] * (2 * val - (x0[0] + x1[0]))
+        + cX[section-1][0][3] * (3 * val2 - 2 * (x0[0]+x1[0]+x2[0] * val + x2[0]*(x0[0]+x1[0]) + x0[0]*x1[0]));
 
-    double t = 3*cX[section][0][3]*val2;
-    xnew = 3*cX[section][0][3]*val2 + 2*(cX[section][0][2]-cX[section][0][3]*(x0[1]+x1[1]+x2[1]))
-        + cX[section][0][1] + cX[section][0][3]*(x0[1]*x1[1]+x0[1]*x2[1]+x1[1]*x2[1]) - cX[section][0][2]*(x0[1]+x2[1]);
-    ynew = 3*cY[section][0][3]*val2 + 2*(cY[section][0][2]-cY[section][0][3]*(y0[1]+y1[1]+y2[1]))
-        + cY[section][0][1] + (cY[section][0][3]*y2[1]-cY[section][0][2])*(y0[1]+y1[1]);
+    ypre = cY[section-1][0][1] * val + cY[section-1][0][2] * (2 * val - (y0[0] + y1[0]))
+        + cY[section-1][0][3] * (3 * val2 - 2 * (y0[0]+y1[0]+y2[0] * val + y2[0]*(y0[0]+y1[0]) + y0[0]*y1[0]));
+
+    xnew = cX[section][0][1] * val + cX[section][0][2] * (2 * val - (x0[1] + x1[1]))
+        + cX[section][0][3] * (3 * val2 - 2 * (x0[1]+x1[1]+x2[1] * val + x2[1]*(x0[1]+x1[1]) + x0[1]*x1[1]));
+
+    ynew = cY[section][0][1] * val + cY[section][0][2] * (2 * val - (y0[1] + y1[1]))
+        + cY[section][0][3] * (3 * val2 - 2 * (y0[1]+y1[1]+y2[1] * val + y2[1]*(y0[1]+y1[1]) + y0[1]*y1[1]));
     
     std::cout << "C1 [" << xpre << "," << ypre << "] => [" << xnew << "," << ynew << "]\n";
 }

@@ -7,13 +7,15 @@ Analytical::Analytical()
 
     for(int i = 0; i < 361; i++) {
         value.push_back({
-            i * dt,
-            i * dt,
+            4 * cos( i * dt ),
+            2 * sin( i * dt ),
             0.0
         });
-        info.vertices.push_back( { 4 * cos( i * dt ), 
-                                   2 * sin( i * dt ), 
-                                   0.0 });
+        info.vertices.push_back( {
+            value[i].x,
+            value[i].y,
+            0.0
+        });
     }
     for(int i = 0; i < info.vertices.size() - 1; i++) {
         info.vertexIndices.push_back(i);

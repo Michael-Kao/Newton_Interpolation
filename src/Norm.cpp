@@ -20,8 +20,8 @@ void NormCalc::Norm2(Analytical *p, Newton *q) {
 }
 
 void NormCalc::Norminf(Analytical *p, Newton *q) {
-    int idx;
-    double res = 0.0;
+    int idx, m_pos;
+    double res = 0.0, cur_min = DBL_MAX;
     for(int i = 0; i < p->value.size(); i++) {
         double val =(p->value[i].x - q->value[i].x) *
                     (p->value[i].x - q->value[i].x) +
@@ -31,13 +31,17 @@ void NormCalc::Norminf(Analytical *p, Newton *q) {
             res =  std::max(res, val);
             idx = i;
         }
+        if(val < cur_min) {
+            cur_min = val;
+            m_pos = i;
+        }
     }
 
-    std::cout << "Norm infinite = " << res << " at " << idx << std::endl;
+    std::cout << "Norm infinite = " << res << " at " << idx << " min = " << cur_min << " at " << m_pos << std::endl;
 }
 
 void NormCalc::Norm2(Analytical *p, Newton *q, int section) {
-    if(q->NofCoef > 8)  return;
+    if(q->NofCoef > 9)  return;
     double sum = 0.0, cur_max = 0.0;
     int pos;
     for(int i = 45 * (section + 1); i < 45 * (section + 2); i++) {
@@ -59,7 +63,7 @@ void NormCalc::Norm2(Analytical *p, Newton *q, int section) {
 }
 
 void NormCalc::Norminf(Analytical *p, Newton *q, int section) {
-    if(q->NofCoef > 8)  return;
+    if(q->NofCoef > 9)  return;
     double res = 0.0;
     int pos;
     for(int i = 45 * (section + 1); i < 45 * (section + 2); i++) {

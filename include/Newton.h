@@ -32,11 +32,12 @@ private:
     std::vector<std::vector<std::vector<double>>> cX;
     std::vector<std::vector<std::vector<double>>> cY;
     // std::vector<double> coef;
-    std::vector<glm::vec3> Origin;
+    std::vector<glm::vec3> OriginX;
+    std::vector<glm::vec3> OriginY;
     double PI;
     double interpolateY(double x);
-    double interpolateX(double y);
-    double itpX(double y, int section);
+    double interpolateX(double x);
+    double itpX(double x, int section);
     double itpY(double x, int section);
     void c1Continuity(int section, double val);
     void splitRegion();
