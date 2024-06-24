@@ -53,3 +53,5 @@ build/**/*
 lib/*
 bin/*
 test/test_runner
+*.zip
+*.7z
